@@ -1,0 +1,1463 @@
+﻿<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataFlow AI</title>
+<style>
+:root{color-scheme:light;--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#69758a;--line:#e3e9f2;--accent:#4f46e5;--err:#dc2626;--warn:#d97706;--info:#0891b2;--ok:#16a34a;--sidebar:#111827}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{height:66px;padding:12px 28px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);display:flex;align-items:center}
+header h1{font-size:18px;margin:0;font-weight:750;letter-spacing:-.03em}
+header span{color:var(--muted);font-size:13px;font-weight:400}
+.app-shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:calc(100vh - 66px)}
+.sidebar{background:var(--sidebar);color:#e5e7eb;padding:24px 14px;display:flex;flex-direction:column;gap:22px}
+.brand{padding:0 10px 18px;border-bottom:1px solid #293244}
+.brand-mark{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#818cf8,#4f46e5);font-weight:800;margin-right:9px}
+.brand strong{font-size:15px;vertical-align:middle}.brand small{display:block;color:#9ca3af;margin:10px 0 0;font-size:12px}
+.nav-label{padding:0 10px;color:#8993a5;text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:700}
+.side-nav{display:grid;gap:5px}
+.nav-btn{width:100%;display:flex;align-items:center;gap:12px;border:0;border-radius:9px;padding:10px 11px;background:transparent;color:#c5ccda;text-align:left;font:inherit;font-size:13px;cursor:pointer;transition:background .16s,color .16s}
+.nav-btn:hover{background:#202a3a;color:#fff}.nav-btn.active{background:#312e81;color:#fff;font-weight:650}
+.nav-icon{width:20px;text-align:center;font-size:16px}.side-help{margin-top:auto;padding:13px;border:1px solid #293244;border-radius:12px;color:#b5bfce;font-size:12px;line-height:1.55}
+main{min-width:0;max-width:1400px;width:100%;margin:0 auto;padding:28px clamp(18px,3vw,42px);display:grid;align-content:start;gap:16px}
+.view-heading{margin:2px 0 18px}.view-heading h2{margin:0;font-size:23px;letter-spacing:-.04em}.view-heading p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 5px 20px rgba(27,39,68,.045)}
+.card h2{font-size:15px;margin:0 0 12px}
+#drop{border:2px dashed #c7d2e3;border-radius:16px;padding:38px 28px;text-align:center;cursor:pointer;color:var(--muted);background:linear-gradient(135deg,#fff,#f8faff);transition:border-color .18s,background .18s,transform .18s}
+#drop:hover,#drop.over{border-color:var(--accent);color:var(--accent);background:#f4f3ff;transform:translateY(-1px)}
+#drop strong{display:inline-block;color:var(--text);font-size:16px;margin-bottom:7px}
+#drop small{display:inline-block;margin-top:8px}
+.drop-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 12px;border-radius:15px;background:#eeedff;color:var(--accent);font-size:23px}
+.nav-view{display:none}.nav-view.active{display:block}
+.view-heading{display:none}.nav-view.active>.view-heading{display:block}
+.msg{min-height:20px;font-size:14px}
+.msg.err{color:var(--err)}
+.msg.ok{color:var(--ok)}
+.hidden{display:none}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;transition:all .16s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,#6258ed,#4f46e5);border-color:var(--accent);color:#fff;box-shadow:0 4px 10px rgba(79,70,229,.18)}
+.btn.primary:hover{color:#fff;opacity:.9}
+.issue{border:1px solid var(--line);border-left-width:4px;border-radius:8px;padding:10px 12px;margin-bottom:10px}
+.issue.error{border-left-color:var(--err)}
+.issue.warning{border-left-color:var(--warn)}
+.issue.info{border-left-color:var(--info)}
+.issue p{margin:0 0 4px;font-size:14px}
+.issue small{color:var(--muted);display:block;margin-bottom:8px}
+.issue .acts{display:flex;gap:8px;flex-wrap:wrap}
+.clean-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;align-items:end}
+.clean-form label{display:grid;gap:5px;color:var(--muted);font-size:12px}
+.clean-form input,.clean-form select,.clean-form textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+.clean-form select[multiple]{min-height:90px}
+.clean-form .hidden{display:none}
+.clean-preview{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.clean-preview table{font-size:12px}
+.ok-box{color:var(--ok);font-size:14px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:6px 10px;text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+td.empty{color:var(--err)}
+ol{margin:0;padding-left:20px;font-size:13px;color:var(--muted)}
+.ask{display:flex;gap:8px}
+.ask input,.extra-input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px}
+pre.sql{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;overflow-x:auto;white-space:pre-wrap;margin:8px 0}
+.note{color:var(--muted);font-size:13px;margin:8px 0}
+progress{width:min(520px,100%);height:12px;accent-color:var(--accent)}
+dialog{width:min(520px,calc(100% - 28px));border:1px solid var(--line);border-radius:14px;padding:20px;color:var(--text);box-shadow:0 20px 70px #17203344}
+dialog::backdrop{background:#11182788}
+dialog select{width:100%;margin:12px 0;padding:8px;border:1px solid var(--line);border-radius:8px}
+.sqlbox{width:100%;min-height:110px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-family:Consolas,monospace;font-size:13px;resize:vertical;margin-bottom:6px}
+.tbl{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:8px}
+.tbl.active{border-color:var(--accent)}
+.tbl .grow{flex:1;min-width:0}
+.tbl small{color:var(--muted)}
+.gap{margin-bottom:16px}
+.sub{font-size:13px;color:var(--muted);margin:14px 0 6px;font-weight:600}
+.issue,.tbl{background:#fff;border-radius:11px}
+.chip{background:#f5f6ff;color:#4b5568}
+table{border-collapse:separate;border-spacing:0}
+th{background:#f7f8fc}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+@media(max-width:820px){.app-shell{grid-template-columns:76px minmax(0,1fr)}.sidebar{padding:18px 9px}.brand{padding:0 10px 16px}.brand strong,.brand small,.nav-label,.nav-text,.side-help{display:none}.brand-mark{margin:0}.nav-btn{justify-content:center;padding:11px 4px}.nav-icon{font-size:18px}}
+@media(max-width:560px){header{height:auto;min-height:60px;padding:12px 14px}.app-shell{grid-template-columns:1fr;min-height:calc(100vh - 60px)}.sidebar{position:sticky;top:0;z-index:5;display:block;padding:7px 8px;overflow-x:auto;white-space:nowrap}.brand,.nav-label,.side-help{display:none}.side-nav{display:flex;gap:5px}.nav-btn{width:auto;display:inline-flex;padding:9px 10px}.nav-text{display:inline}.nav-icon{font-size:15px}main{padding:20px 14px}.view-heading h2{font-size:20px}.card{padding:16px}.bar{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header>
+  <h1>DataFlow AI <span>· ma'lumotni tozalash va tahlil qilish</span></h1>
+  <div id="accountBar" style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <select id="languageSwitcher" class="btn" aria-label="Til">
+      <option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option>
+    </select>
+    <button id="helpOpen" class="btn" type="button">Yordam</button>
+    <span id="accountName" class="note" style="margin:0"></span>
+    <button id="usersOpen" class="btn hidden" type="button">Foydalanuvchilar</button>
+    <button id="logoutBtn" class="btn hidden" type="button">Chiqish</button>
+  </div>
+</header>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">D</span><strong>DataFlow AI</strong><small>Ma'lumotlar bilan ishlash</small></div>
+    <div class="nav-label">Ish maydoni</div>
+    <nav class="side-nav" aria-label="Asosiy menyu">
+      <button class="nav-btn active" type="button" data-view="view-files"><span class="nav-icon">▦</span><span class="nav-text">Fayllar</span></button>
+      <button class="nav-btn" type="button" data-view="view-cleaning"><span class="nav-icon">✦</span><span class="nav-text">Tozalash</span></button>
+      <button class="nav-btn" type="button" data-view="view-charts"><span class="nav-icon">▥</span><span class="nav-text">Grafiklar</span></button>
+      <button class="nav-btn" type="button" data-view="view-sql"><span class="nav-icon">⌘</span><span class="nav-text">SQL muharriri</span></button>
+      <button class="nav-btn" type="button" data-view="view-stats"><span class="nav-icon">◷</span><span class="nav-text">Avto-statistika</span></button>
+      <button class="nav-btn" type="button" data-view="view-notebook"><span class="nav-icon">▤</span><span class="nav-text">Notebook / Kod</span></button>
+      <button class="nav-btn" type="button" data-view="view-dashboard"><span class="nav-icon">▣</span><span class="nav-text">Dashboard</span></button>
+      <button class="nav-btn" type="button" data-view="view-extras"><span class="nav-icon">⚙</span><span class="nav-text">Hisobot va import</span></button>
+      <button class="nav-btn" type="button" data-view="view-help"><span class="nav-icon">?</span><span class="nav-text">Yordam va FAQ</span></button>
+    </nav>
+    <div class="side-help">💡 <strong>Maslahat</strong><br>Avval fayl yuklang, so'ng kerakli bo'limni tanlang.</div>
+  </aside>
+  <main id="content">
+  <section id="view-help" class="nav-view">
+    <div class="view-heading"><h2>Yordam va tez-tez so'raladigan savollar</h2><p>DataFlow AI'dan foydalanish va ma'lumotlaringizni himoyalash bo'yicha qisqa yo'riqnoma.</p></div>
+    <div class="card gap">
+      <h2>Tez boshlash</h2>
+      <ol>
+        <li>CSV yoki Excel faylini yuklang; katta Excel fayllari uchun kerakli varaqlarni tanlang.</li>
+        <li>Jadvalni ko'ring, sahifalang, ustun sarlavhasini bosib saralang.</li>
+        <li>Tozalash amallarini avval ko'rib chiqing, so'ng tasdiqlab qo'llang.</li>
+        <li>SQL, grafik, pivot va dashboard orqali tahlil qiling; natijalarni hisobotga chiqaring.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>Ko'p so'raladigan savollar</h2>
+      <details><summary>Ma'lumotlar qayerda saqlanadi?</summary><p>Mahalliy ishga tushirishda ma'lumotlar ilovaning workspace papkasida saqlanadi. Serverda har bir foydalanuvchining alohida workspace'i bor.</p></details>
+      <details><summary>AI'ga namunaviy qatorlar yuboriladimi?</summary><p>AI sozlamalaridagi maxfiylik tugmasi orqali namunalarni yuborishni o'chiring. O'chirilganda modelga sxema va savol yuboriladi, qatorlar emas.</p></details>
+      <details><summary>Python xavfsizmi?</summary><p>Server rejimida kod alohida, tarmoqsiz Docker konteynerida cheklangan xotira, protsessor, jarayon va vaqt bilan bajariladi. Mahalliy rejim faqat localhost'da ishlashi kerak.</p></details>
+      <details><summary>Parol yoki administratorni qanday tiklayman?</summary><p>Administrator boshqa foydalanuvchining parolini qayta o'rnatishi mumkin. Hech bo'lmaganda bitta faol administratorni o'chirib bo'lmaydi.</p></details>
+      <details><summary>Excel varaqlarini tanlash mumkinmi?</summary><p>Ha. Yuklashdan oldin varaqlar ro'yxatidan bittasini yoki barchasini tanlang.</p></details>
+    </div>
+  </section>
+  <section id="view-files" class="nav-view active">
+    <div class="view-heading"><h2>Fayllar bazasi</h2><p>CSV yoki Excel faylini yuklang va tahlilni boshlang.</p></div>
+  <div class="card">
+    <div class="bar">
+      <label>Loyiha
+        <select id="projectSelect" class="btn"></select>
+      </label>
+      <div class="bar" style="justify-content:flex-end">
+        <input id="projectName" class="extra-input" maxlength="80" placeholder="Yangi loyiha nomi">
+        <button id="projectCreate" class="btn">Loyiha yaratish</button>
+      </div>
+    </div>
+  </div>
+  <div id="drop">
+    <span class="drop-icon">⇧</span>
+    <strong>Fayllarni shu yerga tashlang</strong> yoki bosib tanlang (bir nechtasini birdan mumkin)<br>
+    <small>.csv yoki .xlsx, har biri 1 GB gacha · Excel'dan bir yoki barcha varaqlarni tanlang</small>
+    <input id="file" type="file" accept=".csv,.xlsx" multiple hidden>
+  </div>
+  <div id="msg" class="msg"></div>
+  <div id="uploadProgress" class="hidden"><progress id="uploadProgressBar" max="100" value="0"></progress><span id="uploadProgressText" class="note"></span></div>
+
+  <div id="tablesCard" class="card hidden">
+    <h2>Jadvallar (loyiha)</h2>
+    <div id="tables"></div>
+  </div>
+
+  <div class="card">
+    <h2>AI sozlamalari</h2>
+    <div class="clean-form">
+      <label>Provider
+        <select id="aiProvider">
+          <option value="auto">Avtomatik</option>
+          <option value="gemini">Gemini</option>
+          <option value="claude">Claude</option>
+        </select>
+      </label>
+      <label>Namuna qatorlarni yuborish
+        <input id="aiSendSample" type="checkbox">
+      </label>
+      <label>Esda saqlanadigan savollar soni
+        <input id="aiHistoryLimit" type="number" min="0" max="15" value="5">
+      </label>
+      <label>AI so'rovlar limiti
+        <input id="aiQueryLimit" type="number" min="0" max="50" value="10">
+      </label>
+    </div>
+    <div class="bar" style="margin-top:12px;justify-content:flex-start">
+      <button class="btn primary" id="aiSettingsSave">Saqlash</button>
+    </div>
+    <div id="aiSettingsSummary" class="note" style="margin-top:10px"></div>
+    <div id="aiSettingsStatus" class="msg"></div>
+  </div>
+  </section>
+
+  <div id="result" class="hidden">
+    <div class="card bar gap">
+      <div>
+        <strong id="fname"></strong>
+        <div class="chips" style="margin-top:8px">
+          <span class="chip" id="cRows"></span>
+          <span class="chip" id="cCols"></span>
+          <span class="chip" id="cIssues"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="undo">Bekor qilish</button>
+        <button class="btn primary" id="download">Tozalangan faylni yuklab olish</button>
+      </div>
+    </div>
+
+    <section id="view-sql" class="nav-view">
+    <div class="view-heading"><h2>SQL muharriri</h2><p>So'rov yozing yoki AI'dan jadvalingiz haqida so'rang.</p></div>
+    <div class="card gap">
+      <h2>AI'dan so'rang <small style="color:var(--muted);font-weight:400">(faol jadval bo'yicha)</small></h2>
+      <div class="ask">
+        <input id="question" type="text" placeholder="Masalan: qaysi hududda o'rtacha narx eng baland?">
+        <button class="btn primary" id="askBtn">So'rash</button>
+      </div>
+      <div id="answer"></div>
+    </div>
+
+    <div class="card gap">
+      <h2>SQL muharriri</h2>
+      <textarea id="sql" class="sqlbox" spellcheck="false">SELECT * FROM data LIMIT 100</textarea>
+      <div class="note" id="sqlHint"></div>
+      <button class="btn primary" id="sqlRun">Bajarish (Ctrl+Enter)</button>
+      <div id="sqlResult"></div>
+    </div>
+    </section>
+
+    <section id="view-stats" class="nav-view">
+    <div class="view-heading"><h2>Avto-statistika</h2><p>Ustunlar, taqsimotlar va ma'lumotlar orasidagi bog'liqlik.</p></div>
+    <div class="card gap">
+      <h2>Avto-statistika</h2>
+      <button class="btn primary" id="statsBtn">Statistikani hisoblash</button>
+      <div id="statsBox"></div>
+    </div>
+    </section>
+
+    <section id="view-cleaning" class="nav-view">
+    <div class="view-heading"><h2>Ma'lumotlarni tozalash</h2><p>Topilgan muammolarni ko'rib, tavsiya etilgan amallar bilan bir tugmada tuzating.</p></div>
+    <div class="card gap">
+      <h2>Tozalash amali</h2>
+      <div class="clean-form">
+        <label>Amal
+          <select id="cleanActionSelect">
+            <option value="trim_text">Barcha matnlardan chetki bo'shliqni olish</option>
+            <option value="normalize_text">Ustundagi matnni normallashtirish</option>
+            <option value="remove_duplicates">Aniq takror qatorlarni olib tashlash</option>
+            <option value="remove_near_duplicates">Tanlangan ustunlar bo'yicha takrorlarni olib tashlash</option>
+            <option value="drop_missing_rows">Bo'sh qiymatli qatorni olib tashlash</option>
+            <option value="fill_missing">Bo'sh qiymatni to'ldirish</option>
+            <option value="fill_missing_unknown">Bo'shni “noma'lum” bilan to'ldirish</option>
+            <option value="invalid_to_empty">Noto'g'ri raqam/sanani bo'shatish</option>
+            <option value="convert_number">Raqam turiga o'tkazish</option>
+            <option value="convert_date">Sanani format bilan o'tkazish</option>
+            <option value="date_to_iso">Sanani ISO (YYYY-MM-DD) qilish</option>
+            <option value="rename_column">Ustunni qayta nomlash</option>
+            <option value="drop_column">Ustunni olib tashlash</option>
+            <option value="split_column">Ustunni ikkiga bo'lish</option>
+            <option value="merge_columns">Bir nechta ustunni birlashtirish</option>
+            <option value="replace_values">Qiymatlarni ro'yxat bo'yicha almashtirish</option>
+          </select>
+        </label>
+        <label id="field-column">Ustun
+          <select id="cleanColumnSelect"></select>
+        </label>
+        <label id="field-columns" class="hidden">Ustunlar (bir nechta tanlash mumkin)
+          <select id="cleanColumnsSelect" multiple></select>
+        </label>
+        <label id="field-mode" class="hidden">Matnni o'zgartirish
+          <select id="cleanMode"><option value="trim">Chetki bo'shliqni olish</option><option value="lower">Kichik harf</option><option value="upper">Katta harf</option><option value="spaces">Ketma-ket bo'shliqni qisqartirish</option></select>
+        </label>
+        <label id="field-method" class="hidden">To'ldirish usuli
+          <select id="cleanMethod"><option value="median">Median</option><option value="mean">O'rtacha</option><option value="mode">Eng ko'p uchraydigan</option><option value="value">Berilgan qiymat</option></select>
+        </label>
+        <label id="field-value" class="hidden">Qiymat
+          <input id="cleanValue" type="text" placeholder="Masalan: noma'lum">
+        </label>
+        <label id="field-new-name" class="hidden">Yangi ustun nomi
+          <input id="cleanNewName" type="text" placeholder="Yangi nom">
+        </label>
+        <label id="field-second-name" class="hidden">Ikkinchi ustun nomi
+          <input id="cleanSecondName" type="text" placeholder="Ustun_nomi_2">
+        </label>
+        <label id="field-separator" class="hidden">Ajratgich belgisi
+          <input id="cleanSeparator" type="text" placeholder="Masalan: , yoki bo'sh joy">
+        </label>
+        <label id="field-decimal" class="hidden">O'nlik ajratgichi
+          <input id="cleanDecimal" type="text" maxlength="1" value=".">
+        </label>
+        <label id="field-thousands" class="hidden">Minglik ajratgichi (ixtiyoriy)
+          <input id="cleanThousands" type="text" maxlength="1" placeholder=", yoki bo'sh qoldiring">
+        </label>
+        <label id="field-date-format" class="hidden">Sana formati (ixtiyoriy)
+          <input id="cleanDateFormat" type="text" placeholder="%d/%m/%Y">
+        </label>
+        <label id="field-replacements" class="hidden">Almashtirish ro'yxati (JSON)
+          <textarea id="cleanReplacements" rows="2" placeholder='{"Eski":"Yangi"}'></textarea>
+        </label>
+        <label id="field-drop-sources" class="hidden"><span>Manba ustunlarini o'chirish</span>
+          <input id="cleanDropSources" type="checkbox">
+        </label>
+      </div>
+      <div class="bar" style="justify-content:flex-start;margin-top:12px">
+        <button class="btn" id="cleanPreviewBtn">Oldin/keyin ko'rish</button>
+        <button class="btn primary" id="cleanApplyBtn">Amalni qo'llash</button>
+        <button class="btn" id="cleanAddStepBtn">Retseptga qadam qo'shish</button>
+      </div>
+      <div id="cleaningStatus" class="msg"></div>
+      <div id="cleanPreviewResult"></div>
+    </div>
+    <div class="card gap">
+      <h2>Tozalash retseptlari</h2>
+      <ol id="recipeDraft"></ol>
+      <div class="bar" style="justify-content:flex-start">
+        <input id="recipeName" class="extra-input" placeholder="Retsept nomi">
+        <button class="btn primary" id="recipeSaveBtn">Retseptni saqlash</button>
+      </div>
+      <div class="bar" style="justify-content:flex-start;margin-top:10px">
+        <select id="recipeSelect" class="btn"><option value="">Saqlangan retsept yo'q</option></select>
+        <button class="btn" id="recipePreviewBtn">Retseptni ko'rish</button>
+        <button class="btn" id="recipeApplyBtn">Retseptni qo'llash</button>
+      </div>
+    </div>
+    <div class="card gap">
+      <h2>Deyarli takror qatorlarni topish</h2>
+      <p class="note">Tanlangan ustunlar bo'yicha chetki/ichki bo'shliqlar va katta-kichik harflar normallashtirilib taqqoslanadi.</p>
+      <label class="clean-form">Taqqoslash ustunlari (Ctrl bosib bir nechta tanlang)
+        <select id="nearColumnsSelect" multiple></select>
+      </label>
+      <button class="btn" id="nearFindBtn">Takrorlarni topish</button>
+      <button class="btn" id="nearRemoveBtn">Tanlangan ustunlar bo'yicha takrorlarni olib tashlash</button>
+      <div id="nearDuplicatesResult" class="note"></div>
+    </div>
+    <div class="card gap">
+      <h2>Topilgan muammolar</h2>
+      <div id="issues"></div>
+    </div>
+
+    <div class="card gap">
+      <h2>Ma'lumot ko'rinishi <small style="color:var(--muted);font-weight:400">(dastlabki 10 qator)</small></h2>
+      <div class="scroll"><table id="preview"></table></div>
+    </div>
+    <div class="card gap">
+      <div class="bar"><h2 style="margin:0">Jadval sahifalari</h2>
+        <label class="note">Qator/sahifa
+          <select id="pageSize" class="btn"><option>50</option><option selected>100</option><option>250</option><option>500</option></select>
+        </label>
+      </div>
+      <div class="note">Ustun sarlavhasini bosib saralang.</div>
+      <div class="scroll"><table id="dataPage"></table></div>
+      <div class="bar" style="margin-top:10px">
+        <button class="btn" id="pagePrev">Oldingi</button><span class="note" id="pageStatus"></span>
+        <button class="btn" id="pageNext">Keyingi</button>
+      </div>
+    </div>
+    <div class="card gap">
+      <h2>Ustunlar</h2>
+      <div class="scroll"><table id="columns"></table></div>
+    </div>
+    <div class="card">
+      <h2>O'zgarishlar tarixi</h2>
+      <ol id="history"></ol>
+    </div>
+    </section>
+
+    <section id="view-charts" class="nav-view">
+    <div class="view-heading"><h2>Grafiklar</h2><p>SQL natijasi yoki AI javobidan ustunlarni tanlab grafik chizing.</p></div>
+    <div class="card">
+      <h2>Interaktiv vizualizatsiya</h2>
+      <p class="note">Grafik yaratish uchun SQL bo'limida so'rovni bajaring, so'ng natija jadvalidagi <strong>Grafik chizish</strong> tugmasini oching.</p>
+      <div id="chartWorkspace"></div>
+    </div>
+    <div class="card">
+      <h2>Pivot jadval</h2>
+      <div class="clean-form">
+        <label>Qator bo'yicha
+          <select id="pivotRows" multiple size="4"></select>
+        </label>
+        <label>Ustun bo'yicha (ixtiyoriy)
+          <select id="pivotColumns"><option value="">Tanlanmagan</option></select>
+        </label>
+        <label>Qiymat
+          <select id="pivotValue"></select>
+        </label>
+        <label>Hisoblash
+          <select id="pivotAggregation">
+            <option value="sum">Yig'indi</option><option value="count">Soni</option>
+            <option value="mean">O'rtacha</option><option value="min">Minimum</option><option value="max">Maksimum</option>
+          </select>
+        </label>
+      </div>
+      <button class="btn primary" id="pivotRun" style="margin-top:10px">Pivot hisoblash</button>
+      <div id="pivotResult" class="scroll" style="margin-top:12px"></div>
+    </div>
+    </section>
+
+  </div>
+  <section id="view-extras" class="nav-view">
+    <div class="view-heading"><h2>Hisobot va qo'shimcha vositalar</h2><p>Hisobot, Excel, import va zaxira nusxasi.</p></div>
+    <div class="card gap">
+      <h2>Eksport va g'ayritabiiy qiymatlar</h2>
+      <div class="bar" style="justify-content:flex-start">
+        <button class="btn" id="extraReport">HTML hisobotini yuklab olish</button>
+        <button class="btn" id="extraPdf">PDF uchun chop etish</button>
+        <button class="btn" id="extraExcel">Ko'p varaqli Excel hisobot</button>
+      </div>
+      <div class="bar" style="justify-content:flex-start;margin-top:12px">
+        <select id="extraColumn" aria-label="Raqamli ustun" class="btn"></select>
+        <label class="note">IQR koeffitsiyenti <input id="extraK" type="number" min="0.5" max="10" step="0.5" value="3"></label>
+        <button class="btn" data-outlier="preview">Tekshirish</button>
+        <button class="btn" data-outlier="clip">Chegaraga keltirish</button>
+        <button class="btn" data-outlier="remove">Qatorlarni olib tashlash</button>
+      </div>
+      <div id="extraOutlierResult" class="note"></div>
+    </div>
+    <div class="card gap">
+      <h2>Hisobot ko'rinishi va kunlik yangilash</h2>
+      <div class="clean-form">
+        <label>Hisobot sarlavhasi
+          <input id="reportTitle" maxlength="120" value="DataFlow AI hisoboti">
+        </label>
+        <label>Logotip (PNG, JPEG yoki WebP; 512 KB gacha)
+          <input id="reportLogo" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <label>Kunlik ish vaqti
+          <input id="reportTime" type="time" value="02:00">
+        </label>
+      </div>
+      <div class="bar" style="justify-content:flex-start;margin-top:8px">
+        <label class="note"><input id="reportSchedule" type="checkbox"> Kunlik hisobotni yangilash</label>
+        <label class="note"><input id="reportAutoSave" type="checkbox"> HTML va Excel nusxalarini saqlash</label>
+        <button class="btn primary" id="reportSettingsSave">Sozlamalarni saqlash</button>
+        <button class="btn" id="reportRefreshNow">Hisobotlarni hozir yangilash</button>
+      </div>
+      <div id="reportSettingsMessage" class="note"></div>
+      <div id="savedReports" class="note"></div>
+    </div>
+    <div class="card gap">
+      <h2>Shablonlar galereyasi</h2>
+      <p class="note">Faol jadval ustunlarini tanlang. Natijalar tekshirish uchun ko'rsatkich bo'lib, hukm emas va audit o'rnini bosmaydi.</p>
+      <div id="templateGallery" class="clean-preview"></div>
+      <div id="templateResult"></div>
+    </div>
+    <div class="card gap">
+      <h2>Havola orqali yuklash</h2>
+      <div class="ask"><input id="extraUrl" type="url" placeholder="Ochiq CSV yoki XLSX havolasi"><button class="btn primary" id="extraImportUrl">Yuklash</button></div>
+    </div>
+    <div class="card gap">
+      <h2>PostgreSQL yoki MySQL'dan import</h2>
+      <div class="bar">
+        <select id="extraDbKind" class="btn"><option value="postgres">PostgreSQL</option><option value="mysql">MySQL</option></select>
+        <input id="extraDbHost" class="extra-input" placeholder="Server manzili">
+        <input id="extraDbPort" class="extra-input" type="number" placeholder="Port (ixtiyoriy)">
+        <input id="extraDbName" class="extra-input" placeholder="Baza nomi">
+      </div>
+      <div class="bar" style="margin-top:8px">
+        <input id="extraDbUser" class="extra-input" placeholder="Foydalanuvchi">
+        <input id="extraDbPassword" class="extra-input" type="password" placeholder="Parol (saqlanmaydi)">
+      </div>
+      <textarea id="extraDbQuery" class="sqlbox" style="margin-top:8px" placeholder="Faqat SELECT so'rovi">SELECT * FROM jadval LIMIT 1000</textarea>
+      <button class="btn primary" id="extraImportDb">Import qilish</button>
+    </div>
+    <div class="card">
+      <h2>Zaxira nusxasi</h2>
+      <button class="btn primary" id="extraBackup">Zaxira yaratish</button>
+      <button class="btn" id="extraRefreshBackups">Ro'yxatni yangilash</button>
+      <div id="extraBackupResult" class="note"></div>
+      <ul id="extraBackups"></ul>
+    </div>
+    <div id="extraMessage" class="msg"></div>
+  </section>
+</main>
+</div>
+<dialog id="sheetDialog">
+  <h2>Excel varaqlarini tanlang</h2>
+  <p class="note">Bir yoki bir nechta varaq tanlang. “Barcha varaqlar”ni tanlasangiz, har biri alohida jadval bo'ladi.</p>
+  <select id="sheetSelect" multiple size="8"></select>
+  <div class="bar">
+    <button class="btn" id="sheetAll">Barcha varaqlar</button>
+    <span><button class="btn" id="sheetCancel">Bekor qilish</button>
+    <button class="btn primary" id="sheetConfirm">Yuklash</button></span>
+  </div>
+</dialog>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let fileId = null;
+let tables = [];
+let lastColumns = [];
+let actionList = [];
+let lastSql = { columns: [], rows: [] };
+let recipeDraft = [];
+let nearDuplicateCount = 0;
+let projects = [];
+let pageOffset = 0;
+let pageSort = "";
+let pageDirection = "asc";
+let pageHasMore = false;
+
+const TYPE_LABELS = { number: "raqam", date: "sana", text: "matn", empty: "bo'sh" };
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+}
+
+function say(text, kind) {
+  const m = $("msg");
+  m.textContent = text || "";
+  m.className = "msg " + (kind || "");
+}
+
+async function api(url, options) {
+  let res;
+  try {
+    res = await fetch(url, options);
+  } catch {
+    throw new Error("Serverga ulanib bo'lmadi. Server ishlayaptimi?");
+  }
+  if (!res.ok) {
+    let detail = "Xatolik yuz berdi (HTTP " + res.status + ")";
+    try {
+      const j = await res.json();
+      if (typeof j.detail === "string") detail = j.detail;
+    } catch {}
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
+function renderAiSettingsSummary(settings) {
+  const provider = settings?.provider_label || (settings?.provider === "gemini" ? "Gemini" : settings?.provider === "claude" ? "Claude" : "Avtomatik");
+  const privacy = settings?.privacy_label || (settings?.send_sample === false ? "Namuna qatorlar yuborilmaydi" : "Namuna qatorlar yuboriladi");
+  const history = settings?.history_limit ?? 5;
+  const quota = settings?.query_limit ?? 10;
+  $("aiSettingsSummary").textContent = `AI holati: ${provider} · ${privacy} · tarix: ${history} · limit: ${quota} so'rov`;
+}
+
+async function loadAiSettings() {
+  try {
+    const settings = await api("/settings");
+    $("aiProvider").value = settings.provider || "auto";
+    $("aiSendSample").checked = settings.send_sample !== false;
+    $("aiHistoryLimit").value = settings.history_limit ?? 5;
+    $("aiQueryLimit").value = settings.query_limit ?? 10;
+    renderAiSettingsSummary(settings);
+    $("aiSettingsStatus").textContent = "AI sozlamalari tayyor. Xatolik bo'lsa, providerni yoki kvotani tekshiring.";
+    $("aiSettingsStatus").className = "msg";
+  } catch (e) {
+    $("aiSettingsStatus").textContent = e.message;
+    $("aiSettingsStatus").className = "msg err";
+  }
+}
+
+async function saveAiSettings() {
+  try {
+    const payload = {
+      provider: $("aiProvider").value,
+      send_sample: $("aiSendSample").checked,
+      history_limit: Number($("aiHistoryLimit").value),
+      query_limit: Number($("aiQueryLimit").value),
+    };
+    const settings = await api("/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    renderAiSettingsSummary(settings);
+    $("aiSettingsStatus").textContent = `Saqlandi: ${settings.provider_label || "Avtomatik"} · ${settings.privacy_label || "Namuna qatorlar yuboriladi"}`;
+    $("aiSettingsStatus").className = "msg ok";
+  } catch (e) {
+    $("aiSettingsStatus").textContent = e.message;
+    $("aiSettingsStatus").className = "msg err";
+  }
+}
+
+/* ---------- muammolar va tozalash ---------- */
+
+function actionsFor(issue) {
+  const col = issue.column;
+  const info = lastColumns.find((c) => c.name === col) || {};
+  switch (issue.type) {
+    case "missing":
+      return [
+        info.type === "number"
+          ? { label: "Median bilan to'ldirish", action: { type: "fill_missing", column: col, method: "median" } }
+          : { label: "Eng ko'p uchraydigan qiymat bilan to'ldirish", action: { type: "fill_missing", column: col, method: "mode" } },
+        { label: "Qatorlarni olib tashlash", action: { type: "drop_missing_rows", column: col } },
+      ];
+    case "invalid_number":
+    case "invalid_date":
+      return [{ label: "Noto'g'ri qiymatlarni bo'shatish", action: { type: "invalid_to_empty", column: col } }];
+    case "duplicate":
+      return [{ label: "Takroriy qatorlarni olib tashlash", action: { type: "remove_duplicates" } }];
+    default:
+      return [];
+  }
+}
+
+function renderIssues(issues) {
+  actionList = [];
+  if (!issues.length) {
+    $("issues").innerHTML = '<div class="ok-box">Muammo topilmadi. Ma\'lumot toza ko\'rinadi.</div>';
+    return;
+  }
+  $("issues").innerHTML = issues.map((issue) => {
+    const buttons = actionsFor(issue).map((a) => {
+      actionList.push(a.action);
+      return `<button class="btn" data-i="${actionList.length - 1}">${esc(a.label)}</button>`;
+    }).join("");
+    const rows = issue.rows.length
+      ? `Qatorlar (faylda): ${issue.rows.join(", ")}${issue.count > issue.rows.length ? " ..." : ""}`
+      : "";
+    const examples = issue.examples.length ? ` · Misollar: ${issue.examples.map(esc).join(", ")}` : "";
+    return `<div class="issue ${esc(issue.severity)}">
+      <p>${esc(issue.message)}</p>
+      <small>${esc(rows)}${examples}<br>Tavsiya: ${esc(issue.suggestion)}</small>
+      <div class="acts">${buttons}</div>
+    </div>`;
+  }).join("");
+}
+
+function updateCleaningColumns() {
+  const options = lastColumns.map((column) =>
+    `<option value="${esc(column.name)}">${esc(column.name)}</option>`).join("");
+  $("cleanColumnSelect").innerHTML = options || '<option value="">Avval jadval tanlang</option>';
+  $("cleanColumnsSelect").innerHTML = options;
+  $("nearColumnsSelect").innerHTML = options;
+  nearDuplicateCount = 0;
+  $("nearDuplicatesResult").textContent = "";
+}
+
+function updateActionFields() {
+  const kind = $("cleanActionSelect").value;
+  const multi = ["remove_near_duplicates", "merge_columns"].includes(kind);
+  const needsColumn = [
+    "normalize_text", "drop_missing_rows", "fill_missing", "fill_missing_unknown",
+    "invalid_to_empty", "convert_number", "convert_date", "date_to_iso",
+    "rename_column", "drop_column", "split_column", "replace_values",
+  ].includes(kind);
+  $("field-column").classList.toggle("hidden", !needsColumn);
+  $("field-columns").classList.toggle("hidden", !multi);
+  $("field-mode").classList.toggle("hidden", kind !== "normalize_text");
+  $("field-method").classList.toggle("hidden", kind !== "fill_missing");
+  $("field-value").classList.toggle("hidden", !["fill_missing", "fill_missing_unknown"].includes(kind));
+  $("field-new-name").classList.toggle("hidden", !["rename_column", "split_column", "merge_columns"].includes(kind));
+  $("field-second-name").classList.toggle("hidden", kind !== "split_column");
+  $("field-separator").classList.toggle("hidden", !["split_column", "merge_columns"].includes(kind));
+  $("field-decimal").classList.toggle("hidden", kind !== "convert_number");
+  $("field-thousands").classList.toggle("hidden", kind !== "convert_number");
+  $("field-date-format").classList.toggle("hidden", kind !== "convert_date");
+  $("field-replacements").classList.toggle("hidden", kind !== "replace_values");
+  $("field-drop-sources").classList.toggle("hidden", kind !== "merge_columns");
+}
+
+function selectedColumns(select) {
+  return Array.from(select.selectedOptions).map((option) => option.value);
+}
+
+function buildCleanAction() {
+  const type = $("cleanActionSelect").value;
+  const action = { type };
+  if (["remove_near_duplicates", "merge_columns"].includes(type)) {
+    action.columns = selectedColumns($("cleanColumnsSelect"));
+  }
+  if ([
+    "normalize_text", "drop_missing_rows", "fill_missing", "fill_missing_unknown",
+    "invalid_to_empty", "convert_number", "convert_date", "date_to_iso",
+    "rename_column", "drop_column", "split_column", "replace_values",
+  ].includes(type)) {
+    action.column = $("cleanColumnSelect").value;
+  }
+  if (type === "normalize_text") action.mode = $("cleanMode").value;
+  if (type === "fill_missing") {
+    action.method = $("cleanMethod").value;
+    if (action.method === "value") action.value = $("cleanValue").value;
+  }
+  if (type === "fill_missing_unknown") action.value = $("cleanValue").value || "noma'lum";
+  if (["rename_column", "split_column", "merge_columns"].includes(type)) {
+    action.new_name = $("cleanNewName").value.trim();
+  }
+  if (type === "split_column") {
+    action.second_column = $("cleanSecondName").value.trim() || undefined;
+    action.separator = $("cleanSeparator").value;
+  }
+  if (type === "merge_columns") {
+    action.separator = $("cleanSeparator").value || " ";
+    action.drop_sources = $("cleanDropSources").checked;
+  }
+  if (type === "convert_number") {
+    action.decimal_separator = $("cleanDecimal").value || ".";
+    action.thousands_separator = $("cleanThousands").value || null;
+  }
+  if (type === "convert_date") action.date_format = $("cleanDateFormat").value || null;
+  if (type === "replace_values") {
+    try {
+      action.replacements = JSON.parse($("cleanReplacements").value);
+    } catch {
+      throw new Error("Almashtirish ro'yxati to'g'ri JSON bo'lishi kerak. Masalan: {\"Eski\":\"Yangi\"}");
+    }
+  }
+  return action;
+}
+
+function renderCleaningPreview(result) {
+  const renderSample = (title, sample, summary) => {
+    const keys = sample.length ? Object.keys(sample[0]) : [];
+    const rows = sample.map((row) => keys.map((key) => row[key]));
+    const table = keys.length ? `<div class="scroll"><table>${tableMarkup(keys, rows)}</table></div>` :
+      "<div class=\"note\">Jadval bo'sh.</div>";
+    return `<div><strong>${esc(title)}: ${summary.rows} qator, ${summary.issues} muammo</strong>${table}</div>`;
+  };
+  $("cleanPreviewResult").innerHTML =
+    `<div class="clean-preview">${renderSample("Oldin", result.before.preview, result.before)}${renderSample("Keyin", result.after.preview, result.after)}</div>` +
+    `<div class="note">${result.changes.map(esc).join("; ")}</div>`;
+}
+
+function tableMarkup(head, rows) {
+  const th = head.map((value) => `<th>${esc(value)}</th>`).join("");
+  const tr = rows.map((row) => `<tr>${row.map((value) =>
+    value === null || value === "" ? '<td class="empty">bo\'sh</td>' : `<td>${esc(value)}</td>`
+  ).join("")}</tr>`).join("");
+  return `<thead><tr>${th}</tr></thead><tbody>${tr}</tbody>`;
+}
+
+async function runCleanActions(actions, dryRun) {
+  if (!fileId) throw new Error("Avval jadval tanlang.");
+  const result = await api(`/files/${fileId}/clean`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ actions, dry_run: dryRun }),
+  });
+  renderCleaningPreview(result);
+  $("cleaningStatus").textContent = dryRun
+    ? `Oldin: ${result.before.rows} qator → keyin: ${result.after.rows} qator. Hech narsa saqlanmadi.`
+    : result.changes.join("; ");
+  $("cleaningStatus").className = "msg " + (dryRun ? "" : "ok");
+  if (!dryRun) {
+    show(result.report, result.preview);
+    await loadHistory();
+    await refreshTables();
+  }
+  return result;
+}
+
+function renderRecipeDraft() {
+  $("recipeDraft").innerHTML = recipeDraft.map((action, index) =>
+    `<li>${index + 1}. ${esc(action.type)}${action.column ? ` — ${esc(action.column)}` : ""} ` +
+    `<button class="btn" type="button" data-remove-step="${index}">O'chirish</button></li>`).join("");
+}
+
+async function refreshRecipes() {
+  const recipes = await api("/recipes");
+  $("recipeSelect").innerHTML = recipes.length
+    ? recipes.map((recipe) => `<option value="${esc(recipe.id)}">${esc(recipe.name)} (${recipe.steps} qadam)</option>`).join("")
+    : '<option value="">Saqlangan retsept yo\'q</option>';
+}
+
+async function previewOrApplyRecipe(dryRun) {
+  const recipeId = $("recipeSelect").value;
+  if (!recipeId) throw new Error("Avval saqlangan retseptni tanlang.");
+  const result = await api(`/files/${fileId}/apply_recipe/${recipeId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dry_run: dryRun }),
+  });
+  renderCleaningPreview(result);
+  $("cleaningStatus").textContent = dryRun
+    ? `Retsept ko'rildi. Oldin: ${result.before.rows} qator → keyin: ${result.after.rows}. O'zgarish saqlanmadi.`
+    : result.changes.join("; ");
+  $("cleaningStatus").className = "msg " + (dryRun ? "" : "ok");
+  if (!dryRun) {
+    show(result.report, result.preview);
+    await loadHistory();
+    await refreshTables();
+  }
+}
+
+function renderTable(el, head, rows) {
+  const th = head.map((h) => `<th>${esc(h)}</th>`).join("");
+  const tr = rows.map((r) => "<tr>" + r.map((v) =>
+    v === null || v === "" ? '<td class="empty">bo\'sh</td>' : `<td>${esc(v)}</td>`
+  ).join("") + "</tr>").join("");
+  el.innerHTML = `<thead><tr>${th}</tr></thead><tbody>${tr}</tbody>`;
+}
+
+function updatePivotColumns(columns) {
+  const options = columns.map((column) => `<option value="${esc(column)}">${esc(column)}</option>`).join("");
+  $("pivotRows").innerHTML = options;
+  $("pivotColumns").innerHTML = '<option value="">Tanlanmagan</option>' + options;
+  $("pivotValue").innerHTML = options;
+}
+
+async function runPivot() {
+  if (!fileId) return;
+  const rows = Array.from($("pivotRows").selectedOptions).map((option) => option.value);
+  if (!rows.length) {
+    $("pivotResult").innerHTML = '<div class="msg err">Kamida bitta qator guruhlash ustunini tanlang.</div>';
+    return;
+  }
+  try {
+    const result = await api(`/files/${fileId}/pivot`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rows,
+        columns: $("pivotColumns").value ? [$("pivotColumns").value] : [],
+        values: $("pivotValue").value,
+        aggregation: $("pivotAggregation").value,
+      }),
+    });
+    $("pivotResult").innerHTML = "";
+    const table = document.createElement("table");
+    $("pivotResult").appendChild(table);
+    renderTable(table, result.columns, result.rows);
+  } catch (e) {
+    $("pivotResult").innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+}
+
+function show(r, preview) {
+  lastColumns = r.columns;
+  updatePivotColumns(r.columns.map((column) => column.name));
+  updateCleaningColumns();
+  updateActionFields();
+  $("statsBox").innerHTML = "";
+  $("result").classList.remove("hidden");
+  $("cRows").textContent = `${r.summary.rows} qator`;
+  $("cCols").textContent = `${r.summary.columns} ustun`;
+  $("cIssues").textContent = `${r.summary.issues} muammo`;
+  renderIssues(r.issues);
+  renderTable($("columns"), ["Ustun", "Turi", "Bo'sh", "Noyob qiymatlar"],
+    r.columns.map((c) => [c.name, TYPE_LABELS[c.type] || c.type, c.missing, c.unique]));
+  const keys = preview.length ? Object.keys(preview[0]) : [];
+  renderTable($("preview"), keys, preview.map((row) => keys.map((k) => row[k])));
+}
+
+async function loadHistory() {
+  try {
+    const h = await api(`/files/${fileId}/history`);
+    $("history").innerHTML = h.versions.map((v) =>
+      `<li>${esc(v.label)} <span>(${v.rows} qator)</span></li>`).join("");
+  } catch (e) {
+    $("history").innerHTML = `<li class="msg err">${esc(e.message)}</li>`;
+  }
+}
+
+async function clean(actions) {
+  say("Tozalanmoqda...");
+  try {
+    const res = await api(`/files/${fileId}/clean`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ actions, dry_run: false }),
+    });
+    show(res.report, res.preview);
+    await loadHistory();
+    await refreshTables();
+    say(res.changes.join("; "), "ok");
+  } catch (e) {
+    say(e.message, "err");
+  }
+}
+
+/* ---------- jadvallar (loyiha) ---------- */
+
+function updateHint() {
+  const parts = tables.map((t) => `"${t.table}"(${t.columns.map((c) => `"${c}"`).join(", ")})`);
+  $("sqlHint").textContent = parts.length
+    ? "Jadvallar: " + parts.join(" · ") + " · Faol jadval 'data' nomi bilan ham mavjud"
+    : "";
+}
+
+function renderTables() {
+  $("tablesCard").classList.toggle("hidden", tables.length === 0);
+  $("tables").innerHTML = tables.map((t) => `
+    <div class="tbl ${t.file_id === fileId ? "active" : ""}">
+      <div class="grow"><strong>${esc(t.table)}</strong>
+        <small>· ${esc(t.filename)} · ${t.rows} qator, ${t.columns.length} ustun</small></div>
+      <button class="btn" data-open="${esc(t.file_id)}">Ochish</button>
+      <button class="btn" data-del="${esc(t.file_id)}">O'chirish</button>
+    </div>`).join("");
+}
+
+async function refreshProjects(activeId) {
+  const result = await api("/projects");
+  projects = result.projects;
+  const active = activeId || result.active_id;
+  $("projectSelect").innerHTML = projects.map((p) =>
+    `<option value="${esc(p.id)}" ${p.id === active ? "selected" : ""}>${esc(p.name)}</option>`
+  ).join("");
+}
+
+async function activateProject(projectId) {
+  if (window.DFSaveNotebook && !(await window.DFSaveNotebook())) return;
+  const result = await api(`/projects/${encodeURIComponent(projectId)}/activate`, { method: "POST" });
+  fileId = null;
+  tables = [];
+  $("fname").textContent = "";
+  $("result").classList.add("hidden");
+  await refreshProjects(result.active_id);
+  await refreshTables();
+  if (window.DFExtrasRefresh) window.DFExtrasRefresh();
+  if (window.DFReloadDashboard) await window.DFReloadDashboard();
+  if (window.DFReloadNotebook) await window.DFReloadNotebook();
+}
+
+async function createProject() {
+  const name = $("projectName").value.trim();
+  if (!name) {
+    say("Yangi loyiha nomini kiriting.", "err");
+    return;
+  }
+  try {
+    if (window.DFSaveNotebook && !(await window.DFSaveNotebook())) return;
+    const result = await api("/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    $("projectName").value = "";
+    fileId = null;
+    tables = [];
+    $("fname").textContent = "";
+    $("result").classList.add("hidden");
+    await refreshProjects(result.active_id);
+    await refreshTables();
+    if (window.DFExtrasRefresh) window.DFExtrasRefresh();
+    if (window.DFReloadDashboard) await window.DFReloadDashboard();
+    if (window.DFReloadNotebook) await window.DFReloadNotebook();
+    say(`“${name}” loyihasi yaratildi.`, "ok");
+  } catch (e) {
+    say(e.message, "err");
+  }
+}
+
+async function openFile(id) {
+  fileId = id;
+  const r = await api(`/files/${id}/report`);
+  $("fname").textContent = `${r.filename} (jadval: ${r.table})`;
+  $("answer").innerHTML = "";
+  show(r, r.preview);
+  await loadHistory();
+  pageOffset = 0;
+  pageSort = "";
+  pageDirection = "asc";
+  await loadRows();
+  renderTables();
+  updateHint();
+  if (window.DFExtrasRefresh) window.DFExtrasRefresh();
+}
+
+async function loadRows() {
+  if (!fileId) return;
+  const params = new URLSearchParams({
+    offset: String(pageOffset),
+    limit: $("pageSize").value,
+    direction: pageDirection,
+  });
+  if (pageSort) params.set("sort", pageSort);
+  try {
+    const result = await api(`/files/${fileId}/rows?${params}`);
+    const header = result.columns.map((name) =>
+      `<th><button class="btn" data-sort="${esc(name)}">${esc(name)}${pageSort === name ? (pageDirection === "asc" ? " ↑" : " ↓") : ""}</button></th>`
+    ).join("");
+    const body = result.rows.map((row) => `<tr>${row.map((value) =>
+      value === null || value === "" ? '<td class="empty">bo\'sh</td>' : `<td>${esc(value)}</td>`
+    ).join("")}</tr>`).join("");
+    $("dataPage").innerHTML = `<thead><tr>${header}</tr></thead><tbody>${body}</tbody>`;
+    pageHasMore = result.has_more;
+    const first = result.total ? pageOffset + 1 : 0;
+    const last = Math.min(pageOffset + result.rows.length, result.total);
+    $("pageStatus").textContent = `${first}–${last} / ${result.total} qator`;
+    $("pagePrev").disabled = pageOffset === 0;
+    $("pageNext").disabled = !pageHasMore;
+  } catch (e) {
+    $("dataPage").innerHTML = "";
+    $("pageStatus").textContent = e.message;
+  }
+}
+
+async function refreshTables(selectId) {
+  tables = await api("/files");
+  if (selectId && tables.some((t) => t.file_id === selectId)) {
+    fileId = selectId;
+  } else if (!tables.some((t) => t.file_id === fileId)) {
+    fileId = tables.length ? tables[tables.length - 1].file_id : null;
+  }
+  renderTables();
+  updateHint();
+  if (!fileId) {
+    $("result").classList.add("hidden");
+    return;
+  }
+  if (selectId || !$("fname").textContent) await openFile(fileId);
+}
+
+$("tables").addEventListener("click", async (e) => {
+  const open = e.target.closest("button[data-open]");
+  const del = e.target.closest("button[data-del]");
+  try {
+    if (open) {
+      await openFile(open.dataset.open);
+    } else if (del) {
+      const t = tables.find((x) => x.file_id === del.dataset.del);
+      if (!confirm(`'${t ? t.table : ""}' jadvalini o'chirasizmi? Bu amalni qaytarib bo'lmaydi.`)) return;
+      await api(`/files/${del.dataset.del}`, { method: "DELETE" });
+      if (fileId === del.dataset.del) {
+        fileId = null;
+        $("fname").textContent = "";
+      }
+      await refreshTables();
+      if (fileId) await openFile(fileId);
+    }
+  } catch (err) {
+    say(err.message, "err");
+  }
+});
+
+function chooseSheets(file, sheetNames) {
+  return new Promise((resolve) => {
+    const dialog = $("sheetDialog");
+    const select = $("sheetSelect");
+    select.innerHTML = sheetNames.map((name) =>
+      `<option value="${esc(name)}">${esc(name)}</option>`
+    ).join("");
+    const done = (value) => {
+      dialog.close();
+      dialog.removeEventListener("close", onClose);
+      resolve(value);
+    };
+    const onClose = () => done(null);
+    $("sheetAll").onclick = () => done("__all__");
+    $("sheetCancel").onclick = () => done(null);
+    $("sheetConfirm").onclick = () => {
+      const selected = Array.from(select.selectedOptions).map((option) => option.value);
+      done(selected.length ? selected : [sheetNames[0]]);
+    };
+    dialog.addEventListener("close", onClose, { once: true });
+    dialog.showModal();
+  });
+}
+
+function uploadWithProgress(form) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/upload");
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      const percent = Math.round(event.loaded * 100 / event.total);
+      $("uploadProgress").classList.remove("hidden");
+      $("uploadProgressBar").value = percent;
+      $("uploadProgressText").textContent = `${percent}% yuborildi`;
+    };
+    xhr.onload = () => {
+      let payload;
+      try { payload = JSON.parse(xhr.responseText); }
+      catch { reject(new Error("Server javobini o'qib bo'lmadi.")); return; }
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(payload.detail || `Xatolik yuz berdi (HTTP ${xhr.status})`));
+        return;
+      }
+      resolve(payload);
+    };
+    xhr.onerror = () => reject(new Error("Serverga ulanib bo'lmadi. Server ishlayaptimi?"));
+    xhr.send(form);
+  });
+}
+
+async function upload(files) {
+  files = Array.from(files || []);
+  if (!files.length) return;
+  const errors = [];
+  let lastId = null;
+  for (const file of files) {
+    say(`Yuklanishga tayyorlanmoqda: ${file.name}...`);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      if (file.name.toLowerCase().endsWith(".xlsx")) {
+        const inspect = new FormData();
+        inspect.append("file", file);
+        const info = await api("/upload/sheets", { method: "POST", body: inspect });
+        const selected = await chooseSheets(file, info.sheets);
+        if (!selected) continue;
+        fd.append("sheets", JSON.stringify(selected === "__all__" ? ["__all__"] : selected));
+      }
+      $("uploadProgressBar").value = 0;
+      const data = await uploadWithProgress(fd);
+      const added = data.tables || [data];
+      lastId = added.length ? added[added.length - 1].file_id : null;
+      $("uploadProgressText").textContent = "Server faylni qayta ishlayapti...";
+    } catch (e) {
+      errors.push(`${file.name}: ${e.message}`);
+    }
+  }
+  $("file").value = "";
+  try {
+    await refreshTables(lastId);
+  } catch (e) {
+    errors.push(e.message);
+  }
+  $("uploadProgress").classList.add("hidden");
+  say(errors.join("; "), errors.length ? "err" : "");
+}
+
+/* ---------- AI ---------- */
+
+async function ask() {
+  const q = $("question").value.trim();
+  if (!q || !fileId) return;
+  const box = $("answer");
+  box.innerHTML = '<div class="note">AI o\'ylayapti...</div>';
+  try {
+    const r = await api(`/files/${fileId}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q }),
+    });
+    let html = `<p>${esc(r.explanation)}</p>`;
+    if (r.sql) {
+      html += `<div class="note">Qanday hisoblandi (SQL):</div><pre class="sql">${esc(r.sql)}</pre>`;
+      html += '<div class="scroll"><table id="answerTable"></table></div>';
+      if (r.truncated) html += '<div class="note">Faqat dastlabki 200 qator ko\'rsatildi.</div>';
+      html += '<div class="note">AI xato qilishi mumkin: natijani SQL bilan solishtirib tekshiring.</div>';
+    }
+    box.innerHTML = html;
+    if (r.sql) renderTable($("answerTable"), r.columns, r.rows);
+  } catch (e) {
+    box.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+}
+
+/* ---------- SQL muharriri ---------- */
+
+function downloadSqlCsv() {
+  const q = (v) => {
+    if (v === null || v === undefined) return "";
+    let value = String(v);
+    const candidate = value.replace(/^[ \t\r\n]+/, "");
+    if (/^[=+\-@]/.test(candidate) && !Number.isFinite(Number(candidate))) value = "'" + value;
+    return `"${value.replace(/"/g, '""')}"`;
+  };
+  const lines = [lastSql.columns.map(q).join(",")].concat(lastSql.rows.map((r) => r.map(q).join(",")));
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "natija.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function runSql() {
+  const sql = $("sql").value.trim();
+  if (!sql) return;
+  const box = $("sqlResult");
+  box.innerHTML = '<div class="note">Bajarilmoqda...</div>';
+  try {
+    const r = await api("/sql", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sql, active_id: fileId }),
+    });
+    lastSql = r;
+    const more = r.truncated ? " (faqat dastlabki 1000 ta qator ko'rsatildi)" : "";
+    box.innerHTML = `<div class="note">${r.rows.length} qator${more} · ${r.seconds} s</div>
+      <div class="scroll"><table id="sqlTable"></table></div>
+      <button class="btn" id="sqlCsv" style="margin-top:8px">Natijani CSV qilib yuklab olish</button>`;
+    renderTable($("sqlTable"), r.columns, r.rows);
+    $("sqlCsv").addEventListener("click", downloadSqlCsv);
+  } catch (e) {
+    box.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+}
+
+/* ---------- avto-statistika ---------- */
+
+const fmtNum = (v) => (v === null || v === undefined ? "—" : Number(v).toLocaleString("ru-RU", { maximumFractionDigits: 2 }));
+
+function sparkline(h) {
+  if (!h || !h.counts.length) return "";
+  const max = Math.max(...h.counts), w = 10, hgt = 28;
+  const bars = h.counts.map((c, i) => {
+    const bh = max ? Math.max(1, Math.round((c / max) * hgt)) : 1;
+    return `<rect x="${i * (w + 1)}" y="${hgt - bh}" width="${w}" height="${bh}" style="fill:var(--accent)"/>`;
+  }).join("");
+  return `<svg width="${h.counts.length * (w + 1)}" height="${hgt}">${bars}</svg>`;
+}
+
+function miniTable(head, rows) {
+  return `<div class="scroll"><table><thead><tr>${head.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>${
+    rows.map((r) => `<tr>${r.map((v) => `<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+async function runStats() {
+  if (!fileId) return;
+  const box = $("statsBox");
+  box.innerHTML = '<div class="note">Hisoblanmoqda...</div>';
+  try {
+    const r = await api(`/files/${fileId}/summary`);
+    const nums = r.columns.filter((c) => c.type === "number" && c.count);
+    const texts = r.columns.filter((c) => c.type === "text");
+    const dates = r.columns.filter((c) => c.type === "date");
+    let html = `<div class="note">${r.rows} qator tahlil qilindi</div>`;
+
+    if (nums.length) {
+      html += '<div class="sub">Raqamli ustunlar</div>' + miniTable(
+        ["Ustun", "Bo'sh", "O'rtacha", "Median", "Std", "Min", "Max", "Taqsimot"],
+        nums.map((c) => [esc(c.name), `${c.missing} (${fmtNum(c.missing_pct)}%)`, fmtNum(c.mean), fmtNum(c.median),
+          fmtNum(c.std), fmtNum(c.min), fmtNum(c.max), sparkline(c.histogram)]));
+    }
+    if (texts.length) {
+      html += '<div class="sub">Matnli ustunlar</div>' + miniTable(
+        ["Ustun", "Bo'sh", "Noyob", "Eng ko'p uchraydiganlar"],
+        texts.map((c) => [esc(c.name), `${c.missing} (${fmtNum(c.missing_pct)}%)`, c.unique,
+          c.top.map((t) => `${esc(t.value)} (${t.count})`).join(", ")]));
+    }
+    if (dates.length) {
+      html += '<div class="sub">Sana ustunlari</div>' + miniTable(
+        ["Ustun", "Bo'sh", "Eng erta", "Eng kech"],
+        dates.map((c) => [esc(c.name), c.missing, esc(c.min || "—"), esc(c.max || "—")]));
+    }
+    if (r.correlations.length) {
+      const items = r.correlations.map((x) => {
+        const s = Math.abs(x.r);
+        const strength = s >= 0.7 ? "kuchli" : s >= 0.5 ? "o'rtacha" : "kuchsiz";
+        const dir = x.r > 0 ? "to'g'ri" : "teskari";
+        return `<li>${esc(x.a)} va ${esc(x.b)}: r = ${x.r} (${strength}, ${dir})</li>`;
+      }).join("");
+      html += `<div class="sub">Ustunlar orasidagi bog'liqlik</div><ul style="margin:0;padding-left:20px;font-size:13px">${items}</ul>
+        <div class="note">Bog'liqlik sababni isbotlamaydi: bu faqat birga o'zgarishni ko'rsatadi.</div>`;
+    } else if (nums.length > 1) {
+      html += '<div class="note">Sezilarli bog\'liqlik (|r| ≥ 0.3) topilmadi.</div>';
+    }
+    box.innerHTML = html;
+  } catch (e) {
+    box.innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+}
+
+/* ---------- hodisalar ---------- */
+
+$("issues").addEventListener("click", (e) => {
+  const btn = e.target.closest("button[data-i]");
+  if (btn) clean([actionList[Number(btn.dataset.i)]]);
+});
+
+$("cleanActionSelect").addEventListener("change", updateActionFields);
+$("cleanPreviewBtn").addEventListener("click", async () => {
+  try {
+    await runCleanActions([buildCleanAction()], true);
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+$("cleanApplyBtn").addEventListener("click", async () => {
+  try {
+    await runCleanActions([buildCleanAction()], false);
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+$("cleanAddStepBtn").addEventListener("click", () => {
+  try {
+    recipeDraft.push(buildCleanAction());
+    renderRecipeDraft();
+    $("cleaningStatus").textContent = "Amal retseptga qo'shildi.";
+    $("cleaningStatus").className = "msg ok";
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+$("recipeDraft").addEventListener("click", (e) => {
+  const button = e.target.closest("button[data-remove-step]");
+  if (!button) return;
+  recipeDraft.splice(Number(button.dataset.removeStep), 1);
+  renderRecipeDraft();
+});
+$("recipeSaveBtn").addEventListener("click", async () => {
+  const name = $("recipeName").value.trim();
+  if (!name || !recipeDraft.length) {
+    $("cleaningStatus").textContent = "Retsept nomini kiriting va kamida bitta qadam qo'shing.";
+    $("cleaningStatus").className = "msg err";
+    return;
+  }
+  try {
+    const saved = await api("/recipes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, actions: recipeDraft }),
+    });
+    await refreshRecipes();
+    $("recipeSelect").value = saved.id;
+    $("recipeName").value = "";
+    recipeDraft = [];
+    renderRecipeDraft();
+    $("cleaningStatus").textContent = `“${saved.name}” retsepti saqlandi.`;
+    $("cleaningStatus").className = "msg ok";
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+$("recipePreviewBtn").addEventListener("click", async () => {
+  try {
+    await previewOrApplyRecipe(true);
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+$("recipeApplyBtn").addEventListener("click", async () => {
+  if (!confirm("Retseptning barcha qadamlari faol jadvalga qo'llanadi. Davom etasizmi?")) return;
+  try {
+    await previewOrApplyRecipe(false);
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+$("nearFindBtn").addEventListener("click", async () => {
+  const columns = selectedColumns($("nearColumnsSelect"));
+  const result = $("nearDuplicatesResult");
+  if (!fileId || !columns.length) {
+    result.textContent = "Jadval va taqqoslash uchun kamida bitta ustun tanlang.";
+    return;
+  }
+  result.textContent = "Qatorlar tekshirilmoqda...";
+  try {
+    const found = await api(`/files/${fileId}/near_duplicates`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ columns }),
+    });
+    nearDuplicateCount = found.duplicate_rows;
+    result.innerHTML = nearDuplicateCount
+      ? `<strong>${nearDuplicateCount} ta takror qator, ${found.groups.length} guruh</strong><ul>${
+      found.groups.map((group) => `<li>${group.count} qatorli guruh. Namuna qatorlar: ${group.rows.join(", ")}${
+        group.count > group.rows.length ? ` ... yana ${group.count - group.rows.length} ta` : ""
+      }</li>`).join("")
+    }</ul>`
+      : "Tanlangan ustunlar bo'yicha deyarli takror qator topilmadi.";
+  } catch (e) {
+    result.textContent = e.message;
+  }
+});
+$("nearRemoveBtn").addEventListener("click", async () => {
+  const columns = selectedColumns($("nearColumnsSelect"));
+  if (!nearDuplicateCount) {
+    $("nearDuplicatesResult").textContent = "Avval takror qatorlarni tekshiring.";
+    return;
+  }
+  if (!confirm(`${nearDuplicateCount} ta takror qator olib tashlanadi. Davom etasizmi?`)) return;
+  try {
+    await runCleanActions([{ type: "remove_near_duplicates", columns }], false);
+  } catch (e) {
+    $("cleaningStatus").textContent = e.message;
+    $("cleaningStatus").className = "msg err";
+  }
+});
+refreshRecipes().catch((e) => {
+  $("cleaningStatus").textContent = `Retseptlarni yuklab bo'lmadi: ${e.message}`;
+  $("cleaningStatus").className = "msg err";
+});
+
+$("undo").addEventListener("click", async () => {
+  try {
+    const res = await api(`/files/${fileId}/undo`, { method: "POST" });
+    show(res, res.preview);
+    await loadHistory();
+    await refreshTables();
+    say(`Bekor qilindi: ${res.undone}`, "ok");
+  } catch (e) {
+    say(e.message, "err");
+  }
+});
+
+$("download").addEventListener("click", () => {
+  if (fileId) window.location = `/files/${fileId}/download`;
+});
+
+$("askBtn").addEventListener("click", ask);
+$("question").addEventListener("keydown", (e) => { if (e.key === "Enter") ask(); });
+$("aiSettingsSave").addEventListener("click", saveAiSettings);
+$("sqlRun").addEventListener("click", runSql);
+$("pivotRun").addEventListener("click", runPivot);
+$("sql").addEventListener("keydown", (e) => { if (e.ctrlKey && e.key === "Enter") runSql(); });
+$("statsBtn").addEventListener("click", runStats);
+$("projectSelect").addEventListener("change", (e) => activateProject(e.target.value).catch((err) => say(err.message, "err")));
+$("projectCreate").addEventListener("click", createProject);
+$("projectName").addEventListener("keydown", (e) => { if (e.key === "Enter") createProject(); });
+$("pageSize").addEventListener("change", () => { pageOffset = 0; loadRows(); });
+$("pagePrev").addEventListener("click", () => {
+  pageOffset = Math.max(0, pageOffset - Number($("pageSize").value));
+  loadRows();
+});
+$("pageNext").addEventListener("click", () => {
+  if (!pageHasMore) return;
+  pageOffset += Number($("pageSize").value);
+  loadRows();
+});
+$("dataPage").addEventListener("click", (e) => {
+  const button = e.target.closest("button[data-sort]");
+  if (!button) return;
+  const column = button.dataset.sort;
+  pageDirection = pageSort === column && pageDirection === "asc" ? "desc" : "asc";
+  pageSort = column;
+  pageOffset = 0;
+  loadRows();
+});
+
+function activateView(viewId) {
+  document.querySelectorAll(".nav-view").forEach((view) => {
+    view.classList.toggle("active", view.id === viewId);
+  });
+  document.querySelectorAll(".nav-btn").forEach((button) => {
+    button.classList.toggle("active", button.dataset.view === viewId);
+  });
+}
+
+document.querySelector(".side-nav").addEventListener("click", (e) => {
+  const button = e.target.closest(".nav-btn[data-view]");
+  if (!button) return;
+  const target = $(button.dataset.view);
+  if (!target) {
+    say(button.dataset.view === "view-notebook" ? "Notebook yuklanmoqda..." : "Bu bo'lim hozircha mavjud emas.", "err");
+    return;
+  }
+  if (!fileId && !["view-files", "view-notebook", "view-dashboard", "view-extras", "view-help"].includes(button.dataset.view)) {
+    activateView("view-files");
+    say("Avval CSV yoki Excel faylini yuklang.", "err");
+    return;
+  }
+  if (button.dataset.view !== "view-files") $("result").classList.remove("hidden");
+  activateView(button.dataset.view);
+});
+
+const drop = $("drop");
+drop.addEventListener("click", () => $("file").click());
+$("file").addEventListener("change", (e) => upload(e.target.files));
+["dragenter", "dragover"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((ev) =>
+  drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => upload(e.dataTransfer.files));
+
+loadAiSettings().catch((e) => {
+  $("aiSettingsStatus").textContent = e.message;
+  $("aiSettingsStatus").className = "msg err";
+});
+refreshProjects().then(() => refreshTables()).catch((e) => say(e.message, "err"));
+</script>
+<script src="/charts.js"></script>
+<script src="/dashboard.js"></script><script src="/pycells.js"></script><script src="/extras.js"></script><script src="/i18n.js"></script><script src="/auth.js"></script></body>
+</html>cd backend

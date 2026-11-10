@@ -1,0 +1,15 @@
+pandas
+numpy
+openpyxl
+Pillow
+fastapi
+uvicorn[standard]
+python-multipart
+duckdb
+python-dotenv
+google-genai
+anthropic
+psycopg2-binary
+pymysql
+pytest
+coverage
